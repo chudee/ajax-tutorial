@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>ajax-tutorial.html</title>
+</head>
+<body>
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Hello! ajax tutorial</h1>
+
+            <br><br>
+            <div class="form-group">
+                <label> Search User </label>
+                <input type="text" class="form-control" id="search" name="search" placeholder="User Name">    
+            </div>
+            <button class="send-ajax btn btn-success">Search</button>
+            <button class="reset btn btn-default">Reset</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="result">
+            <ul class="list-group">
+                <h1> Dummy Users </h1> <br><br>
+                <% for(let i in dummyUsers) { %>
+                    <li class="list-group-item"> 
+                        <%= dummyUsers[i].name %>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.send-ajax').addEventListener('click', () => {
+            // 입력값 찾아 위치
+            const inputData = document.querySelector('#search').value
+            // sendAjax 함수를 만들고 URL과 data를 전달
+            sendAjax('http://localhost:3000/ajaxSearch', inputData)
+        })
+        sendAjax = (url, responseData) => {
+            // 입력 값을 받고 문자열 형태로 저장
+            let data = { 'search': responseData }
+            data = JSON.stringify(data)
+
+            // content-type을 설정하고 데이터 송신
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', url)
+            xhr.setRequestHeader('Content-type', 'application/json')
+            xhr.send(data)
+
+            // 데이터 수신이 완료되면 표시
+            xhr.addEventListener('load', () => {
+                const result = JSON.parse(xhr.responseText)
+                // 데이터가 없으면 리턴
+                if(result.result !== 'Succeed') { 
+                    let output = '<h1> No username was found. </h1> <div class="alert alert-warning" role="alert">  Please search again </div>'
+                    document.querySelector('.result').innerHTML = output
+                    return
+                } 
+
+                // 데이터가 있으면 결과값 표시
+                const temp = []
+                for(let i in result.selectedUsers) temp.push(result.selectedUsers[i])
+                
+                let output = '<h1> User search results </h1> <br><br> <ol>'
+                temp.forEach(e => {
+                    output += "<li> <ul>"
+                    output += "<li style='list-style: none;'> <h3>" + e.name + "</h3> </li>"
+                    output += "<li style='list-style: none;'> Work : " + e.work + "</li>"
+                    output += "<li style='list-style: none;'> City : " + e.city + "</li>"
+                    output += "<li style='list-style: none;'> Address : " + e.address + "</li>"
+                    output += "<li style='list-style: none;'> Email : " + e.email + "</li>"
+                    output += " </ul> </li> "
+                })
+                output += "</ol>"
+
+                document.querySelector('.result').innerHTML = output
+            })
+
+            // 다시 리로드
+            document.querySelector('.reset').addEventListener('click', () => {
+                location.reload()
+            })
+        }
+        </script>
+    </body>
+</html>
